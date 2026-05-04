@@ -1,5 +1,5 @@
 # Variables - Ekhane change korle baki shob auto change hobe
-FILENAME   = and_gate
+FILENAME   = led_control_interrupt
 PORT       = /dev/ttyACM0
 DEVICE     = atmega328p
 BAUD       = 115200
