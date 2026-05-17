@@ -97,29 +97,48 @@ ISR(TIMER0_COMPA_vect) {
 }
 
 int main() {
+	DDRB |= (1<<PB5);
 	uart_init();
 	timer0_init();
 	sei();
 	char cmd_buffer[BUFFER_SIZE];
+	char re_buffer[BUFFER_SIZE];
+	volatile uint8_t j = 0;
 	volatile uint8_t i = 0;
+	send_str("Starting");
+	send_str(".");
+	send_str(".");
+	send_str(".");
+	send_str(".");
 	while(1) {
-
 		if(flag) {
+			send_str("\033[2J\033[H");
 			flag = 0;
-			char time_str[32];
-			sprintf(time_str, "%02d:%02d:%02d\r\n", h,m,s);
-			send_str(time_str);
+                        char time_str[32];
+                        sprintf(time_str, "[Timer] %02d:%02d:%02d\r\n> ", h,m,s);
+			if(j>0) {
+				send_str(time_str);
+				re_buffer[j] = '\0';
+                        	send_str(re_buffer);
+			} else {
+                        send_str(time_str);
+			}
 		}
 		char c = rx_dequeue();
 		if(c == '\0') continue;
 		if(c == '\r') {
 			cmd_buffer[i] = '\0';
 			i = 0;
-
-			send_str(cmd_buffer);
-			send_str("\r\n");
+			j = 0;
+			
+			if(strcmp(cmd_buffer, "led on") == 0) {
+				PORTB |= (1<<PB5);
+			} else if(strcmp(cmd_buffer, "led off") == 0) {
+				PORTB &= ~(1<<PB5);
+			}
 		}else if(i < BUFFER_SIZE-1) {
 			cmd_buffer[i++] = c;
+			re_buffer[j++] = c;
 			char str_c[4];
 			sprintf(str_c, "%c", c);
 			send_str(str_c);
